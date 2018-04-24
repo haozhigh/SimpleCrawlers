@@ -10,7 +10,7 @@ from io import BytesIO
 from configs import *
 
 
-NUM_IMAGES_TO_GET = 1
+NUM_IMAGES_TO_GET = 10
 
 def main():
     global NUM_IMAGES_TO_GET
@@ -61,6 +61,7 @@ def main():
     idx = 0
     while idx <= NUM_IMAGES_TO_GET:
         list_url = "https://www.bing.com/HPImageArchive.aspx?format=js&idx={}&n=1&mkt=en-US".format(idx)
+        print("Getting iamge list from '{}'".format(list_url))
         r = requests.get(list_url)
         if r.status_code != requests.codes.ok:
             print("Failed to get url '{}'".format(list_url))
@@ -86,6 +87,7 @@ def main():
         image_path = os.path.join(image_dir, "{}.jpg".format(image_date))
         if not os.path.isfile(image_path):
             image_url = "https://www.bing.com{}".format(url)
+            print("## Downloading image from '{}'".format(image_url))
             r_image = requests.get(image_url)
             if r_image.status_code != requests.codes.ok:
                 print("Failed to get url '{}'".format(image_url))
