@@ -86,7 +86,7 @@ def main():
 
         image_path = os.path.join(image_dir, "{}.jpg".format(image_date))
         if not os.path.isfile(image_path):
-            image_url = "https://www.bing.com{}".format(url)
+            image_url = "https://www.bing.com{}_{}x{}.jpg".format(url_base, resolution_width, resolution_height)
             print("## Downloading image from '{}'".format(image_url))
             r_image = requests.get(image_url)
             if r_image.status_code != requests.codes.ok:
