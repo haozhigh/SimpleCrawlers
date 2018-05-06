@@ -12,8 +12,24 @@ def parse_options():
     parser.add_argument("-l", "--list", action = "store_true", help = "List all item names")
     parser.add_argument("-L", "--list_depends", action = "store_true", help = "List all item depends")
     parser.add_argument("-s", "--search", help = "Search an item", default = "")
+    parser.add_argument("-f", "--filter", help = "Filter item names and descriptions", default = "")
 
     return parser.parse_args()
+
+def display_item(name):
+    item, depends, items = get_item(name)
+
+    print("[{}]".format(item['name']))
+
+    print("  {}".format(item['descript']))
+
+    for x in items:
+        print("  -> [{}]".format(x))
+
+    if len(depends) > 0:
+        print("[{} x {}]".format(item['name'], item['bunch']))
+    for depend in depends:
+        print("  <- [{} x {}]".format(depend[0], depend[1]))
 
 def main():
 
@@ -28,21 +44,14 @@ def main():
         print(list_depends())
     elif args['search'] != "":
         assert_item_exists(args['search'])
-        item, depends, items = get_item(args['search'])
-
-        print("Item Name:")
-        print("    {}".format(item['name']))
-
-        print("Item Description:")
-        print("    {}".format(item['descript']))
-
-        print("Item '{} x {}' requires:".format(item['name'], item['bunch']))
-        for depend in depends:
-            print("    {} x {}".format(depend[0], depend[1]))
-
-        print("Item '{}' can be used to compsite:".format(item['name']))
-        for x in items:
-            print("    {}".format(x))
+        display_item(args['search'])
+    elif args['filter'] != "":
+        names = filter_items(args['filter'])
+        i = 0
+        for name in names:
+            i += 1
+            print("################ Filtered {} ################".format(i))
+            display_item(name)
     else:
         print("No option specified")
 

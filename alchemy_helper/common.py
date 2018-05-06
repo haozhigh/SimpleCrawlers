@@ -19,7 +19,7 @@ def init_db():
             return
 
     # open db
-    print("#### Opening database '{}'".format("./data/data.db"))
+    #print("#### Opening database '{}'".format("./data/data.db"))
     conn = sqlite3.connect("./data/data.db")
 
     # get cursor
@@ -27,30 +27,30 @@ def init_db():
 
     # create table items
     c.execute('''
-        select name from sqlite_master
-        where type='table' and name='items'
+        SELECT name FROM sqlite_master
+        WHERE type='table' AND name='items'
         ''')
     if c.fetchone() == None:
-        print("#### Creating table '{}' in database".format('items'))
+        #print("#### Creating table '{}' in database".format('items'))
         c.execute('''
-            create table items (
-                name text primary key not null,
-                bunch integer not null,
-                descript text not null)
+            CREATE TABLE items (
+                name TEXT PRIMARY KEY NOT NULL,
+                bunch INTEGER NOT NULL,
+                descript TEXT NOT NULL)
             ''')
 
     # create table depends
     c.execute('''
-        select name from sqlite_master
-        where type='table' and name='depends'
+        SELECT name FROM sqlite_master
+        WHERE type='table' AND name='depends'
         ''')
     if c.fetchone() == None:
-        print("#### Creating table '{}' in database".format('depends'))
+        #print("#### Creating table '{}' in database".format('depends'))
         c.execute('''
-            create table depends (
-                name text not null,
-                depend_name text not null,
-                depend_bunch integer not null)
+            CREATE TABLE depends (
+                name TEXT NOT NULL,
+                depend_name TEXT NOT NULL,
+                depend_bunch INTEGER NOT NULL)
             ''')
 
 def assert_item_exists(name):
@@ -58,8 +58,8 @@ def assert_item_exists(name):
     global c
 
     c.execute('''
-        select name from items 
-        where name='{}'
+        SELECT name FROM items 
+        WHERE name='{}'
         '''.format(name))
     if c.fetchone() == None:
         print("Item '{}' does not exist in database".format(name))
@@ -70,8 +70,8 @@ def assert_item_not_exist(name):
     global c
 
     c.execute('''
-        select name from items 
-        where name='{}'
+        SELECT name FROM items 
+        WHERE name='{}'
         '''.format(name))
     if c.fetchone() != None:
         print("Item '{}' already exists in database".format(name))
@@ -85,15 +85,15 @@ def remove_existing_item(name):
     print("#### Remove item '{}' from table items in database".format(name))
     # remove item
     c.execute('''
-        delete from items
-        where name='{}'
+        DELETE FROM items
+        WHERE name='{}'
         '''.format(name))
 
     print("#### Remove item '{}' from table depends in database".format(name))
     # remove depends of item
     c.execute('''
-        delete from depends
-        where name='{}'
+        DELETE FROM depends
+        WHERE name='{}'
         '''.format(name))
 
 def add_item(args):
@@ -103,18 +103,18 @@ def add_item(args):
     # add item
     print("#### Adding item '{}' to table items in database".format(args['name']))
     c.execute('''
-        insert into items
+        INSERT INTO items
         (name, bunch, descript)
-        values('{}', '{}', '{}')
+        VALUES('{}', '{}', '{}')
         '''.format(args['name'], args['bunch'], args['descript']))
 
     # add item depends
     for x in args['depend']:
         print("#### Add depend '{}' <- '{}' to table depends in database".format(args['name'], x[0]))
         c.execute('''
-            insert into depends
+            INSERT INTO depends
             (name, depend_name, depend_bunch)
-            values('{}', '{}', '{}')
+            VALUES('{}', '{}', '{}')
             '''.format(args['name'], x[0], x[1]))
 
 def close_db():
@@ -125,7 +125,7 @@ def close_db():
     conn.commit()
 
     # close cursor and db
-    print("#### Closing database")
+    #print("#### Closing database")
     c.close()
     conn.close()
 
@@ -133,9 +133,7 @@ def list_items():
     global conn
     global c
 
-    c.execute('''
-        select name from items
-        ''')
+    c.execute("SELECT name FROM items")
 
     items = list()
     row = c.fetchone()
@@ -144,13 +142,27 @@ def list_items():
         row = c.fetchone()
     return items
 
-def list_depends():
+def filter_items(pattern):
     global conn
     global c
 
     c.execute('''
-        select name, depend_name from depends
-        ''')
+        SELECT name FROM items
+        WHERE name LIKE '%{}%' OR descript LIKE '%{}%'
+        '''.format(pattern, pattern))
+
+    names = list()
+    row = c.fetchone()
+    while row != None:
+        names.append(row[0])
+        row = c.fetchone()
+    return names
+
+def list_depends():
+    global conn
+    global c
+
+    c.execute("SELECT name, depend_name FROM depends")
 
     depends = list()
     row = c.fetchone()
@@ -168,8 +180,8 @@ def get_item(name):
     items = list()
 
     c.execute('''
-        select bunch, descript from items
-        where name='{}'
+        SELECT bunch, descript FROM items
+        WHERE name='{}'
         '''.format(name))
     row = c.fetchone()
     assert row != None and c.fetchone() == None
@@ -178,8 +190,8 @@ def get_item(name):
     item['descript'] = row[1]
 
     c.execute('''
-        select depend_name, depend_bunch from depends
-        where name='{}'
+        SELECT depend_name, depend_bunch FROM depends
+        WHERE name='{}'
         '''.format(name))
     row = c.fetchone()
     while row != None:
@@ -187,8 +199,8 @@ def get_item(name):
         row = c.fetchone()
 
     c.execute('''
-        select name from depends
-        where depend_name='{}'
+        SELECT name FROM depends
+        WHERE depend_name='{}'
         '''.format(name))
     row = c.fetchone()
     while row != None:
