@@ -45,10 +45,7 @@ def main():
     c = conn.cursor()
 
     # create table
-    c.execute('''
-        select name from sqlite_master
-        where type='table' and name='wallpapers'
-        ''')
+    c.execute("select name from sqlite_master where type='table' and name='wallpapers'")
     if c.fetchone() == None:
         c.execute('''
             create table wallpapers (
@@ -73,15 +70,9 @@ def main():
         url = j['images'][0]['url']
         copyright = j['images'][0]['copyright']
 
-        c.execute('''
-            select * from wallpapers
-            where image_date='{}'
-            '''.format(image_date))
+        c.execute("select * from wallpapers where image_date=?", (image_date,))
         if c.fetchone() == None:
-            c.execute('''
-                insert into wallpapers (image_date, url_base, copyright)
-                values ('{}', '{}', '{}')
-                '''.format(image_date, url_base, copyright))
+            c.execute("insert into wallpapers (image_date, url_base, copyright) values (?, ?, ?)", (image_date, url_base, copyright))
             print("## Inserted image {} to database ##".format(image_date))
 
         image_path = os.path.join(image_dir, "{}.jpg".format(image_date))
@@ -97,16 +88,6 @@ def main():
             print("## Downloaded image {} ##".format(image_path))
 
         idx += 1
-
-    # insert record
-    #c.execute('''
-    #    insert into wallpapers (image_date, url_base, copyright)
-    #    values ('aa', 'bb', 'cc')
-    #    ''')
-
-    # query records
-    ##c.execute("select * from wallpapers order by id desc limit 0,10")
-    ##print(c.fetchall())
 
     # commit connection changes
     conn.commit()
