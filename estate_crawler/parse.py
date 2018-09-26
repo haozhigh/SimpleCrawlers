@@ -1,9 +1,4 @@
-
-
-import sys
-import requests
 import re
-import time
 
 # re pattern for a tag
 def p(tag):
@@ -116,39 +111,7 @@ def parse(text):
 
     return infos
 
-
-def main():
-    session = requests.Session()
-
-    district_names = {"gulou": "鼓楼",
-                      "jianye": "建邺",
-                      "qinhuai": "秦淮",
-                      "xuanwu": "玄武",
-                      "yuhuatai": "雨花台",
-                      "qixia": "栖霞",
-                      "jiangning": "江宁",
-                      "pukou": "浦口",
-                      "liuhe": "六合",
-                      "lishui": "溧水",
-                      "gaochun": "高淳"}
-
-    run_pass = int(input("Select run pass from 1-4: "))
-    if run_pass == 1:
-        districts = ("gulou", "jianye")
-        ofile_name = "1.csv"
-    elif run_pass == 2:
-        districts = ("qinhuai", "xuanwu")
-        ofile_name = "2.csv"
-    elif run_pass == 3:
-        districts = ("jiangning",)
-        ofile_name = "3.csv"
-    elif run_pass == 4:
-        districts = ("yuhuatai", "qixia", "pukou", "liuhe", "lishui", "gaochun")
-        ofile_name = "4.csv"
-    else:
-        print("Invalid run pass: {}".format(run_pass))
-        return
-
+def write_header(ofile_name):
     with open(ofile_name, 'w') as ofile:
         ofile.write("标题" + ",")
         ofile.write("区域" + ",")
@@ -169,53 +132,23 @@ def main():
         ofile.write("总价（万元）" + ",")
         ofile.write("单价（元/平方米）" + "\n")
 
-    for district in districts:
-        for num_room in range(1, 6):
-
-            total_pages = 2**30
-            page_id = 1
-            while page_id <= total_pages:
-                response = session.get("https://nj.lianjia.com/ershoufang/{}/pg{}l{}/".format(district, page_id, num_room))
-                if response.status_code != 200:
-                    print("Request {} {} {} failed with status code {}".format(district, num_room, page_id, 200))
-
-                # get number of list pages under filter conditions
-                if total_pages == 2**30:
-                    total_pages = get_total_pages(response.text)
-                    print("{} total list pages found in {} {}".format(total_pages, district, num_room))
-                if total_pages < 0:
-                    break
-
-                infos = parse(response.text)
-                print("{} infos extracted from page {} {} {}".format(len(infos), district, num_room, page_id))
-                for info in infos:
-                    for key in info:
-                        info[key] = info[key].replace('"', "'")
-
-                    with open(ofile_name, 'a') as ofile:
-                        ofile.write('"' + info["title"] + '"' + ",")
-                        ofile.write('"' + district_names[district] + '"' + ",")
-                        ofile.write('"' + info["district"] + '"' + ",")
-                        ofile.write('"' + info["rooms"] + '"' + ",")
-                        ofile.write('"' + info["area"] + '"' + ",")
-                        ofile.write('"' + info["direction"] + '"' + ",")
-                        ofile.write('"' + info["decoration"] + '"' + ",")
-                        ofile.write('"' + info["elevator"] + '"' + ",")
-                        ofile.write('"' + info["floors"] + '"' + ",")
-                        ofile.write('"' + info["location"] + '"' + ",")
-                        ofile.write('"' + info["followed"] + '"' + ",")
-                        ofile.write('"' + info["visited"] + '"' + ",")
-                        ofile.write('"' + info["time"] + '"' + ",")
-                        ofile.write('"' + info["subway"] + '"' + ",")
-                        ofile.write('"' + info["taxfree"] + '"' + ",")
-                        ofile.write('"' + info["haskey"] + '"' + ",")
-                        ofile.write('"' + info["total_price"] + '"' + ",")
-                        ofile.write('"' + info["unit_price"] + '"' + "\n")
-
-                time.sleep(3)
-                page_id += 1
-
-
-if __name__ == "__main__":
-    assert sys.version_info.major > 2, "This script runs only in Python3"
-    main()
+def write_info(ofile_name, info):
+    with open(ofile_name, 'a') as ofile:
+        ofile.write('"' + info["title"] + '"' + ",")
+        ofile.write('"' + info["district_name"] + '"' + ",")
+        ofile.write('"' + info["district"] + '"' + ",")
+        ofile.write('"' + info["rooms"] + '"' + ",")
+        ofile.write('"' + info["area"] + '"' + ",")
+        ofile.write('"' + info["direction"] + '"' + ",")
+        ofile.write('"' + info["decoration"] + '"' + ",")
+        ofile.write('"' + info["elevator"] + '"' + ",")
+        ofile.write('"' + info["floors"] + '"' + ",")
+        ofile.write('"' + info["location"] + '"' + ",")
+        ofile.write('"' + info["followed"] + '"' + ",")
+        ofile.write('"' + info["visited"] + '"' + ",")
+        ofile.write('"' + info["time"] + '"' + ",")
+        ofile.write('"' + info["subway"] + '"' + ",")
+        ofile.write('"' + info["taxfree"] + '"' + ",")
+        ofile.write('"' + info["haskey"] + '"' + ",")
+        ofile.write('"' + info["total_price"] + '"' + ",")
+        ofile.write('"' + info["unit_price"] + '"' + "\n")
