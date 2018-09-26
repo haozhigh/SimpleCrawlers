@@ -6,28 +6,17 @@ import requests
 import time
 import random
 import datetime
+import argparse
 
 import parse
 
-def main():
-    district_names = {"gulou": "鼓楼",
-                      "jianye": "建邺",
-                      "qinhuai": "秦淮",
-                      "xuanwu": "玄武",
-                      "yuhuatai": "雨花台",
-                      "qixia": "栖霞",
-                      "jiangning": "江宁",
-                      "pukou": "浦口",
-                      "liuhe": "六合",
-                      "lishui": "溧水",
-                      "gaochun": "高淳"}
+def update(districts, city):
 
-    ofile_name = datetime.datetime.now().strftime(r"%Y_%m_%d") + ".csv"
+    ofile_name = "{}_secondhand_{}.csv".format(city, datetime.datetime.now().strftime(r"%Y_%m_%d"))
     parse.write_header(ofile_name)
 
     session = requests.Session()
-    districts = ("gulou", "jianye", "qinhuai", "xuanwu", "jiangning", "yuhuatai", "qixia", "pukou", "liuhe", "lishui", "gaochun")
-    for district in districts:
+    for district in districts.keys():
         for num_room in range(1, 6):
 
             total_pages = 2**30
@@ -59,11 +48,33 @@ def main():
                     for key in info:
                         info[key] = info[key].replace('"', "'")
 
-                    info["district_name"] = district_names[district]
+                    info["district_name"] = districts[district]
                     parse.write_info(ofile_name, info)
 
                 time.sleep(random.uniform(5, 15))
                 page_id += 1
+
+def main():
+    parser = argparse.ArgumentParser(description = "get secondhand house info from LJ")
+    parser.add_argument("city", choices = ["nanjing"])
+    args = parser.parse_args()
+
+    if args.city == "nanjing":
+        districts = {"gulou": "鼓楼",
+                      "jianye": "建邺",
+                      "qinhuai": "秦淮",
+                      "xuanwu": "玄武",
+                      "yuhuatai": "雨花台",
+                      "qixia": "栖霞",
+                      "jiangning": "江宁",
+                      "pukou": "浦口",
+                      "liuhe": "六合",
+                      "lishui": "溧水",
+                      "gaochun": "高淳"}
+        update(districts, args.city)
+    else:
+        print("Unsupported city: {}".format(args.city))
+        return
 
 
 if __name__ == "__main__":
